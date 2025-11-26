@@ -64,12 +64,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bniddam/utils.git"
+    "url": "git+https://github.com/bniddam-labs/utils.git"
   },
   "bugs": {
-    "url": "https://github.com/bniddam/utils/issues"
+    "url": "https://github.com/bniddam-labs/utils/issues"
   },
-  "homepage": "https://github.com/bniddam/utils#readme",
+  "homepage": "https://github.com/bniddam-labs/utils#readme",
   "files": [
     "dist",
     "README.md",
