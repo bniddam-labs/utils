@@ -50,6 +50,7 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "prepublishOnly": "pnpm run build"
+    "prepare": "pnpm run build",
   },
   "keywords": [
     "utils",
@@ -71,9 +72,12 @@
   },
   "homepage": "https://github.com/bniddam-labs/utils#readme",
   "files": [
+    "src",
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "*.json",
+    "*.ts"
   ],
   "devDependencies": {
     "@biomejs/biome": "2.3.2",
