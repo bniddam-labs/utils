@@ -5,4 +5,4 @@
  * Provides an alternative to exception-based error handling.
  */
 
-export * from './result';
+export * from './result.js';

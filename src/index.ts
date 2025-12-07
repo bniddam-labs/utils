@@ -11,6 +11,6 @@
  * - **validation**: Zod-based validation utilities
  */
 
-export * from './string';
-export * from './result';
-export * from './validation';
+export * from './string/index.js';
+export * from './result/index.js';
+export * from './validation/index.js';
