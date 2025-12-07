@@ -8,7 +8,9 @@ export default defineConfig({
 		'validation/index': 'src/validation/index.ts',
 	},
 	format: ['cjs', 'esm'],
-	dts: true,
+	dts: {
+		resolve: true, // Resolve and inline all type definitions
+	},
 	splitting: false,
 	sourcemap: true,
 	clean: true,
