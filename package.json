@@ -1,6 +1,6 @@
 {
 	"name": "@bniddam-labs/utils",
-	"version": "2.0.0",
+	"version": "2.0.1w",
 	"description": "Framework-agnostic utility functions with Zod validation",
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
