@@ -16,7 +16,7 @@ function sanitizeFilename(filename, maxLength = 255) {
     sanitized = nameWithoutExt.slice(0, maxNameLength) + ext;
   }
   if (!sanitized || sanitized === ext || sanitized.length === 0) {
-    sanitized = `file${ext || ".bin"}`;
+    throw new Error(`Cannot sanitize filename: "${filename}" results in an empty or invalid filename after sanitization`);
   }
   return sanitized;
 }
