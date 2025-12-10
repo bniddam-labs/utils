@@ -19,40 +19,37 @@
  * sanitizeFilename(''); // 'file.bin'
  * ```
  */
-export function sanitizeFilename(
-  filename: string,
-  maxLength: number = 255,
-): string {
-  // Remove null bytes first
-  let sanitized = filename.replace(/\0/g, '');
+export function sanitizeFilename(filename: string, maxLength: number = 255): string {
+	// Remove null bytes first
+	let sanitized = filename.replace(/\0/g, '');
 
-  // Replace ALL dangerous characters including path separators
-  // Keep ONLY alphanumeric, dots, hyphens, underscores
-  sanitized = sanitized.replace(/[^a-zA-Z0-9._-]/g, '_');
+	// Replace ALL dangerous characters including path separators
+	// Keep ONLY alphanumeric, dots, hyphens, underscores
+	sanitized = sanitized.replace(/[^a-zA-Z0-9._-]/g, '_');
 
-  // Remove leading/trailing dots and underscores
-  sanitized = sanitized.replace(/^[._]+|[._]+$/g, '');
+	// Remove leading/trailing dots and underscores
+	sanitized = sanitized.replace(/^[._]+|[._]+$/g, '');
 
-  // Prevent double extensions and collapse multiple dots
-  sanitized = sanitized.replace(/\.+/g, '.');
+	// Prevent double extensions and collapse multiple dots
+	sanitized = sanitized.replace(/\.+/g, '.');
 
-  // Extract extension for length calculation
-  const dotIndex = sanitized.lastIndexOf('.');
-  const ext = dotIndex > 0 ? sanitized.slice(dotIndex) : '';
-  const nameWithoutExt = dotIndex > 0 ? sanitized.slice(0, dotIndex) : sanitized;
+	// Extract extension for length calculation
+	const dotIndex = sanitized.lastIndexOf('.');
+	const ext = dotIndex > 0 ? sanitized.slice(dotIndex) : '';
+	const nameWithoutExt = dotIndex > 0 ? sanitized.slice(0, dotIndex) : sanitized;
 
-  // Truncate if too long (total length including extension)
-  if (sanitized.length > maxLength) {
-    const maxNameLength = maxLength - ext.length;
-    sanitized = nameWithoutExt.slice(0, maxNameLength) + ext;
-  }
+	// Truncate if too long (total length including extension)
+	if (sanitized.length > maxLength) {
+		const maxNameLength = maxLength - ext.length;
+		sanitized = nameWithoutExt.slice(0, maxNameLength) + ext;
+	}
 
-  // Ensure filename is not empty after sanitization
-  if (!sanitized || sanitized === ext || sanitized.length === 0) {
-    sanitized = `file${ext || '.bin'}`;
-  }
+	// Ensure filename is not empty after sanitization
+	if (!sanitized || sanitized === ext || sanitized.length === 0) {
+		throw new Error(`Cannot sanitize filename: "${filename}" results in an empty or invalid filename after sanitization`);
+	}
 
-  return sanitized;
+	return sanitized;
 }
 
 /**
@@ -73,7 +70,7 @@ export function sanitizeFilename(
  * ```
  */
 export function sanitizeSearchInput(search: string): string {
-  return search.replace(/[%_\\]/g, '\\$&');
+	return search.replace(/[%_\\]/g, '\\$&');
 }
 
 /**
@@ -90,15 +87,11 @@ export function sanitizeSearchInput(search: string): string {
  * truncate('Short', 10); // 'Short'
  * ```
  */
-export function truncate(
-  str: string,
-  maxLength: number = 100,
-  ellipsis: string = '...',
-): string {
-  if (str.length <= maxLength) {
-    return str;
-  }
-  return str.slice(0, maxLength - ellipsis.length) + ellipsis;
+export function truncate(str: string, maxLength: number = 100, ellipsis: string = '...'): string {
+	if (str.length <= maxLength) {
+		return str;
+	}
+	return str.slice(0, maxLength - ellipsis.length) + ellipsis;
 }
 
 /**
@@ -113,7 +106,7 @@ export function truncate(
  * ```
  */
 export function removeWhitespace(str: string): string {
-  return str.replace(/\s+/g, '');
+	return str.replace(/\s+/g, '');
 }
 
 /**
@@ -128,5 +121,5 @@ export function removeWhitespace(str: string): string {
  * ```
  */
 export function normalizeWhitespace(str: string): string {
-  return str.replace(/\s+/g, ' ').trim();
+	return str.replace(/\s+/g, ' ').trim();
 }
