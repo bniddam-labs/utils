@@ -62,7 +62,7 @@ declare class Result<T, E = Error> {
      * }
      * ```
      */
-    isOk(): this is Result<T, never>;
+    isOk(): boolean;
     /**
      * Check if result is an error
      *
@@ -75,7 +75,7 @@ declare class Result<T, E = Error> {
      * }
      * ```
      */
-    isErr(): this is Result<never, E>;
+    isErr(): boolean;
     /**
      * Unwrap a successful result or throw an error
      *
@@ -89,6 +89,18 @@ declare class Result<T, E = Error> {
      */
     unwrap(): T;
     /**
+     * Unwrap an error result or throw
+     *
+     * @returns The error if failed
+     * @throws Error if result is a success
+     *
+     * @example
+     * ```ts
+     * const error = result.unwrapErr(); // throws if ok
+     * ```
+     */
+    unwrapErr(): E;
+    /**
      * Unwrap a successful result or return a default value
      *
      * @param defaultValue - Default value if error
@@ -100,6 +112,18 @@ declare class Result<T, E = Error> {
      * ```
      */
     unwrapOr(defaultValue: T): T;
+    /**
+     * Unwrap a successful result or compute a value from the error
+     *
+     * @param fn - Function to compute default value from error
+     * @returns The data if successful, otherwise computed value
+     *
+     * @example
+     * ```ts
+     * const data = result.unwrapOrElse(err => err.defaultValue);
+     * ```
+     */
+    unwrapOrElse(fn: (error: E) => T): T;
     /**
      * Map a successful result to a new value
      *
@@ -239,6 +263,82 @@ declare class Result<T, E = Error> {
      * ```
      */
     inspectErr(fn: (error: E) => void): Result<T, E>;
+    /**
+     * Wrap a function that may throw into a Result
+     *
+     * @param fn - Function that may throw
+     * @param mapError - Optional function to map thrown error to E
+     * @returns Result of the function execution
+     *
+     * @example
+     * ```ts
+     * const result = Result.try(() => JSON.parse(input));
+     * const custom = Result.try(
+     *   () => riskyOperation(),
+     *   (e) => new CustomError(String(e))
+     * );
+     * ```
+     */
+    static try<T, E = unknown>(fn: () => T, mapError?: (e: unknown) => E): Result<T, E>;
+    /**
+     * Convert a Promise into a Result
+     *
+     * @param p - Promise to convert
+     * @param mapError - Optional function to map rejection to E
+     * @returns Promise that resolves to a Result
+     *
+     * @example
+     * ```ts
+     * const result = await Result.fromPromise(fetch('/api/data'));
+     * const custom = await Result.fromPromise(
+     *   asyncOperation(),
+     *   (e) => new ApiError(String(e))
+     * );
+     * ```
+     */
+    static fromPromise<T, E = unknown>(p: Promise<T>, mapError?: (e: unknown) => E): Promise<Result<T, E>>;
+    /**
+     * Combine an array of Results into a single Result (fail-fast)
+     *
+     * Returns Ok with array of values if all results are Ok,
+     * otherwise returns the first Err encountered.
+     *
+     * @param results - Array of results to combine
+     * @returns Result containing array of values or first error
+     *
+     * @example
+     * ```ts
+     * const results = [Result.ok(1), Result.ok(2), Result.ok(3)];
+     * const combined = Result.all(results); // Result.ok([1, 2, 3])
+     *
+     * const withError = [Result.ok(1), Result.err('fail'), Result.ok(3)];
+     * const failed = Result.all(withError); // Result.err('fail')
+     * ```
+     */
+    static all<T, E>(results: readonly Result<T, E>[]): Result<T[], E>;
+    /**
+     * Map an array of values through a function returning Results (fail-fast)
+     *
+     * Similar to Array.map, but for Result-returning functions.
+     * Stops at the first error encountered.
+     *
+     * @param values - Array of values to map
+     * @param fn - Function that transforms value to Result
+     * @returns Result containing array of transformed values or first error
+     *
+     * @example
+     * ```ts
+     * const parseNumbers = (s: string) =>
+     *   isNaN(+s) ? Result.err('invalid') : Result.ok(+s);
+     *
+     * const result = Result.traverse(['1', '2', '3'], parseNumbers);
+     * // Result.ok([1, 2, 3])
+     *
+     * const invalid = Result.traverse(['1', 'x', '3'], parseNumbers);
+     * // Result.err('invalid')
+     * ```
+     */
+    static traverse<A, T, E>(values: readonly A[], fn: (a: A) => Result<T, E>): Result<T[], E>;
 }
 
 export { Result };

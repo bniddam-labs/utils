@@ -1,3 +1,24 @@
+var __async = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
+};
+
 // src/result/result.ts
 var Result = class _Result {
   constructor(_success, _data, _error) {
@@ -81,6 +102,23 @@ var Result = class _Result {
     throw this._error;
   }
   /**
+   * Unwrap an error result or throw
+   *
+   * @returns The error if failed
+   * @throws Error if result is a success
+   *
+   * @example
+   * ```ts
+   * const error = result.unwrapErr(); // throws if ok
+   * ```
+   */
+  unwrapErr() {
+    if (!this._success) {
+      return this._error;
+    }
+    throw new Error("unwrapErr() called on an Ok result");
+  }
+  /**
    * Unwrap a successful result or return a default value
    *
    * @param defaultValue - Default value if error
@@ -98,6 +136,20 @@ var Result = class _Result {
     return defaultValue;
   }
   /**
+   * Unwrap a successful result or compute a value from the error
+   *
+   * @param fn - Function to compute default value from error
+   * @returns The data if successful, otherwise computed value
+   *
+   * @example
+   * ```ts
+   * const data = result.unwrapOrElse(err => err.defaultValue);
+   * ```
+   */
+  unwrapOrElse(fn) {
+    return this._success ? this._data : fn(this._error);
+  }
+  /**
    * Map a successful result to a new value
    *
    * @param fn - Mapping function
@@ -110,7 +162,7 @@ var Result = class _Result {
    * ```
    */
   map(fn) {
-    if (this.isOk()) {
+    if (this._success) {
       return _Result.ok(fn(this._data));
     }
     return _Result.err(this._error);
@@ -128,7 +180,7 @@ var Result = class _Result {
    * ```
    */
   mapErr(fn) {
-    if (this.isErr()) {
+    if (!this._success) {
       return _Result.err(fn(this._error));
     }
     return _Result.ok(this._data);
@@ -146,7 +198,7 @@ var Result = class _Result {
    * ```
    */
   flatMap(fn) {
-    if (this.isOk()) {
+    if (this._success) {
       return fn(this._data);
     }
     return _Result.err(this._error);
@@ -179,7 +231,7 @@ var Result = class _Result {
    * ```
    */
   orElse(fn) {
-    if (this.isErr()) {
+    if (!this._success) {
       return fn(this._error);
     }
     return _Result.ok(this._data);
@@ -199,10 +251,7 @@ var Result = class _Result {
    * ```
    */
   match(handlers) {
-    if (this.isOk()) {
-      return handlers.ok(this._data);
-    }
-    return handlers.err(this._error);
+    return this._success ? handlers.ok(this._data) : handlers.err(this._error);
   }
   /**
    * Execute side effects on success without modifying the Result
@@ -218,7 +267,7 @@ var Result = class _Result {
    * ```
    */
   tap(fn) {
-    if (this.isOk()) {
+    if (this._success) {
       fn(this._data);
     }
     return this;
@@ -253,7 +302,7 @@ var Result = class _Result {
    * ```
    */
   tapErr(fn) {
-    if (this.isErr()) {
+    if (!this._success) {
       fn(this._error);
     }
     return this;
@@ -273,6 +322,116 @@ var Result = class _Result {
    */
   inspectErr(fn) {
     return this.tapErr(fn);
+  }
+  // ---- Helper methods ----
+  /**
+   * Wrap a function that may throw into a Result
+   *
+   * @param fn - Function that may throw
+   * @param mapError - Optional function to map thrown error to E
+   * @returns Result of the function execution
+   *
+   * @example
+   * ```ts
+   * const result = Result.try(() => JSON.parse(input));
+   * const custom = Result.try(
+   *   () => riskyOperation(),
+   *   (e) => new CustomError(String(e))
+   * );
+   * ```
+   */
+  static try(fn, mapError = (e) => e) {
+    try {
+      return _Result.ok(fn());
+    } catch (e) {
+      return _Result.err(mapError(e));
+    }
+  }
+  /**
+   * Convert a Promise into a Result
+   *
+   * @param p - Promise to convert
+   * @param mapError - Optional function to map rejection to E
+   * @returns Promise that resolves to a Result
+   *
+   * @example
+   * ```ts
+   * const result = await Result.fromPromise(fetch('/api/data'));
+   * const custom = await Result.fromPromise(
+   *   asyncOperation(),
+   *   (e) => new ApiError(String(e))
+   * );
+   * ```
+   */
+  static fromPromise(p, mapError = (e) => e) {
+    return __async(this, null, function* () {
+      try {
+        return _Result.ok(yield p);
+      } catch (e) {
+        return _Result.err(mapError(e));
+      }
+    });
+  }
+  /**
+   * Combine an array of Results into a single Result (fail-fast)
+   *
+   * Returns Ok with array of values if all results are Ok,
+   * otherwise returns the first Err encountered.
+   *
+   * @param results - Array of results to combine
+   * @returns Result containing array of values or first error
+   *
+   * @example
+   * ```ts
+   * const results = [Result.ok(1), Result.ok(2), Result.ok(3)];
+   * const combined = Result.all(results); // Result.ok([1, 2, 3])
+   *
+   * const withError = [Result.ok(1), Result.err('fail'), Result.ok(3)];
+   * const failed = Result.all(withError); // Result.err('fail')
+   * ```
+   */
+  static all(results) {
+    const out = [];
+    for (const r of results) {
+      if (r.isErr()) {
+        return _Result.err(r.unwrapErr());
+      }
+      out.push(r.unwrap());
+    }
+    return _Result.ok(out);
+  }
+  /**
+   * Map an array of values through a function returning Results (fail-fast)
+   *
+   * Similar to Array.map, but for Result-returning functions.
+   * Stops at the first error encountered.
+   *
+   * @param values - Array of values to map
+   * @param fn - Function that transforms value to Result
+   * @returns Result containing array of transformed values or first error
+   *
+   * @example
+   * ```ts
+   * const parseNumbers = (s: string) =>
+   *   isNaN(+s) ? Result.err('invalid') : Result.ok(+s);
+   *
+   * const result = Result.traverse(['1', '2', '3'], parseNumbers);
+   * // Result.ok([1, 2, 3])
+   *
+   * const invalid = Result.traverse(['1', 'x', '3'], parseNumbers);
+   * // Result.err('invalid')
+   * ```
+   */
+  static traverse(values, fn) {
+    const out = [];
+    for (const v of values) {
+      const r = fn(v);
+      if (r.isErr()) {
+        return _Result.err(r.unwrapErr());
+      }
+      out.push(r.unwrap());
+    }
+    return _Result.ok(out);
   }
 };
 

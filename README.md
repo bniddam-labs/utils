@@ -77,6 +77,116 @@ import * as id from '@bniddam-labs/utils/id';
 ```
 
 📚 Examples (from the code)
+
+## Result Pattern
+
+Type-safe error handling inspired by Rust's `Result<T, E>`. Encode success/failure in types instead of throwing exceptions.
+
+### Basic Usage
+
+```ts
+import { Result } from '@bniddam-labs/utils/result';
+
+// Create results
+const success = Result.ok(42);
+const failure = Result.err(new Error('Something went wrong'));
+
+// Check status
+if (success.isOk()) {
+  console.log(success.unwrap()); // 42
+}
+
+// Pattern matching
+const value = success.match({
+  ok: (data) => `Success: ${data}`,
+  err: (error) => `Error: ${error.message}`
+});
+```
+
+### Transforming Values
+
+```ts
+// Map successful values
+const doubled = Result.ok(5)
+  .map(x => x * 2)
+  .map(x => `Result: ${x}`);
+// Result.ok("Result: 10")
+
+// Chain operations that return Results
+const result = Result.ok(5)
+  .flatMap(x => x > 0 ? Result.ok(x * 2) : Result.err('negative'))
+  .flatMap(x => Result.ok(x + 1));
+// Result.ok(11)
+
+// Transform errors
+const apiError = Result.err('Not found')
+  .mapErr(msg => ({ code: 404, message: msg }));
+```
+
+### Working with Exceptions
+
+```ts
+// Wrap functions that throw
+const parsed = Result.try(() => JSON.parse(input));
+
+// With custom error mapping
+const safe = Result.try(
+  () => riskyOperation(),
+  (e) => new CustomError(String(e))
+);
+
+// Async operations
+const user = await Result.fromPromise(
+  fetch('/api/user'),
+  (e) => new ApiError(String(e))
+);
+```
+
+### Collection Operations
+
+```ts
+// Combine multiple Results (fail-fast)
+const results = [Result.ok(1), Result.ok(2), Result.ok(3)];
+const combined = Result.all(results);
+// Result.ok([1, 2, 3])
+
+// Map array through Result-returning function
+const parseNumber = (s: string) =>
+  isNaN(+s) ? Result.err('invalid') : Result.ok(+s);
+
+const parsed = Result.traverse(['1', '2', '3'], parseNumber);
+// Result.ok([1, 2, 3])
+```
+
+### Railway-Oriented Programming
+
+```ts
+// Chain operations that can fail
+const processUser = (id: number) =>
+  fetchUser(id)
+    .flatMap(validateUser)
+    .flatMap(enrichUserData)
+    .map(formatUserResponse)
+    .tapErr(error => logger.error('Failed to process user', error));
+
+// Provide fallbacks
+const result = fetchConfig()
+  .orElse(() => loadDefaultConfig())
+  .unwrapOr(FALLBACK_CONFIG);
+```
+
+### Side Effects
+
+```ts
+// Execute side effects without changing the Result
+Result.ok(user)
+  .tap(u => logger.info('Processing user', u.id))
+  .map(u => u.profile)
+  .tapErr(err => logger.error('Failed', err));
+```
+
+## String Utilities
+
 Below are real, working examples based on functions exported by the string module (these examples are from the repository source):
 
 - sanitizeFilename

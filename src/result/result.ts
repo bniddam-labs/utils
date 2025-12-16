@@ -70,7 +70,7 @@ export class Result<T, E = Error> {
    * }
    * ```
    */
-  isOk(): this is Result<T, never> {
+  isOk(): boolean {
     return this._success === true;
   }
 
@@ -86,7 +86,7 @@ export class Result<T, E = Error> {
    * }
    * ```
    */
-  isErr(): this is Result<never, E> {
+  isErr(): boolean {
     return this._success === false;
   }
 
@@ -109,6 +109,24 @@ export class Result<T, E = Error> {
   }
 
   /**
+   * Unwrap an error result or throw
+   *
+   * @returns The error if failed
+   * @throws Error if result is a success
+   *
+   * @example
+   * ```ts
+   * const error = result.unwrapErr(); // throws if ok
+   * ```
+   */
+  unwrapErr(): E {
+    if (!this._success) {
+      return this._error as E;
+    }
+    throw new Error('unwrapErr() called on an Ok result');
+  }
+
+  /**
    * Unwrap a successful result or return a default value
    *
    * @param defaultValue - Default value if error
@@ -127,6 +145,21 @@ export class Result<T, E = Error> {
   }
 
   /**
+   * Unwrap a successful result or compute a value from the error
+   *
+   * @param fn - Function to compute default value from error
+   * @returns The data if successful, otherwise computed value
+   *
+   * @example
+   * ```ts
+   * const data = result.unwrapOrElse(err => err.defaultValue);
+   * ```
+   */
+  unwrapOrElse(fn: (error: E) => T): T {
+    return this._success ? (this._data as T) : fn(this._error as E);
+  }
+
+  /**
    * Map a successful result to a new value
    *
    * @param fn - Mapping function
@@ -139,10 +172,10 @@ export class Result<T, E = Error> {
    * ```
    */
   map<U>(fn: (data: T) => U): Result<U, E> {
-    if (this.isOk()) {
-      return Result.ok(fn(this._data!));
+    if (this._success) {
+      return Result.ok<U, E>(fn(this._data as T));
     }
-    return Result.err(this._error!);
+    return Result.err<U, E>(this._error as E);
   }
 
   /**
@@ -158,10 +191,10 @@ export class Result<T, E = Error> {
    * ```
    */
   mapErr<F>(fn: (error: E) => F): Result<T, F> {
-    if (this.isErr()) {
-      return Result.err(fn(this._error!));
+    if (!this._success) {
+      return Result.err<T, F>(fn(this._error as E));
     }
-    return Result.ok(this._data!);
+    return Result.ok<T, F>(this._data as T);
   }
 
   /**
@@ -177,10 +210,10 @@ export class Result<T, E = Error> {
    * ```
    */
   flatMap<U>(fn: (data: T) => Result<U, E>): Result<U, E> {
-    if (this.isOk()) {
-      return fn(this._data!);
+    if (this._success) {
+      return fn(this._data as T);
     }
-    return Result.err(this._error!);
+    return Result.err<U, E>(this._error as E);
   }
 
   /**
@@ -212,10 +245,10 @@ export class Result<T, E = Error> {
    * ```
    */
   orElse<F>(fn: (error: E) => Result<T, F>): Result<T, F> {
-    if (this.isErr()) {
-      return fn(this._error!);
+    if (!this._success) {
+      return fn(this._error as E);
     }
-    return Result.ok(this._data!);
+    return Result.ok<T, F>(this._data as T);
   }
 
   /**
@@ -233,10 +266,9 @@ export class Result<T, E = Error> {
    * ```
    */
   match<U>(handlers: { ok: (data: T) => U; err: (error: E) => U }): U {
-    if (this.isOk()) {
-      return handlers.ok(this._data!);
-    }
-    return handlers.err(this._error!);
+    return this._success
+      ? handlers.ok(this._data as T)
+      : handlers.err(this._error as E);
   }
 
   /**
@@ -253,8 +285,8 @@ export class Result<T, E = Error> {
    * ```
    */
   tap(fn: (data: T) => void): Result<T, E> {
-    if (this.isOk()) {
-      fn(this._data!);
+    if (this._success) {
+      fn(this._data as T);
     }
     return this;
   }
@@ -290,8 +322,8 @@ export class Result<T, E = Error> {
    * ```
    */
   tapErr(fn: (error: E) => void): Result<T, E> {
-    if (this.isErr()) {
-      fn(this._error!);
+    if (!this._success) {
+      fn(this._error as E);
     }
     return this;
   }
@@ -311,5 +343,127 @@ export class Result<T, E = Error> {
    */
   inspectErr(fn: (error: E) => void): Result<T, E> {
     return this.tapErr(fn);
+  }
+
+  // ---- Helper methods ----
+
+  /**
+   * Wrap a function that may throw into a Result
+   *
+   * @param fn - Function that may throw
+   * @param mapError - Optional function to map thrown error to E
+   * @returns Result of the function execution
+   *
+   * @example
+   * ```ts
+   * const result = Result.try(() => JSON.parse(input));
+   * const custom = Result.try(
+   *   () => riskyOperation(),
+   *   (e) => new CustomError(String(e))
+   * );
+   * ```
+   */
+  static try<T, E = unknown>(
+    fn: () => T,
+    mapError: (e: unknown) => E = (e) => e as E,
+  ): Result<T, E> {
+    try {
+      return Result.ok<T, E>(fn());
+    } catch (e) {
+      return Result.err<T, E>(mapError(e));
+    }
+  }
+
+  /**
+   * Convert a Promise into a Result
+   *
+   * @param p - Promise to convert
+   * @param mapError - Optional function to map rejection to E
+   * @returns Promise that resolves to a Result
+   *
+   * @example
+   * ```ts
+   * const result = await Result.fromPromise(fetch('/api/data'));
+   * const custom = await Result.fromPromise(
+   *   asyncOperation(),
+   *   (e) => new ApiError(String(e))
+   * );
+   * ```
+   */
+  static async fromPromise<T, E = unknown>(
+    p: Promise<T>,
+    mapError: (e: unknown) => E = (e) => e as E,
+  ): Promise<Result<T, E>> {
+    try {
+      return Result.ok<T, E>(await p);
+    } catch (e) {
+      return Result.err<T, E>(mapError(e));
+    }
+  }
+
+  /**
+   * Combine an array of Results into a single Result (fail-fast)
+   *
+   * Returns Ok with array of values if all results are Ok,
+   * otherwise returns the first Err encountered.
+   *
+   * @param results - Array of results to combine
+   * @returns Result containing array of values or first error
+   *
+   * @example
+   * ```ts
+   * const results = [Result.ok(1), Result.ok(2), Result.ok(3)];
+   * const combined = Result.all(results); // Result.ok([1, 2, 3])
+   *
+   * const withError = [Result.ok(1), Result.err('fail'), Result.ok(3)];
+   * const failed = Result.all(withError); // Result.err('fail')
+   * ```
+   */
+  static all<T, E>(results: readonly Result<T, E>[]): Result<T[], E> {
+    const out: T[] = [];
+    for (const r of results) {
+      if (r.isErr()) {
+        return Result.err<T[], E>(r.unwrapErr());
+      }
+      out.push(r.unwrap());
+    }
+    return Result.ok<T[], E>(out);
+  }
+
+  /**
+   * Map an array of values through a function returning Results (fail-fast)
+   *
+   * Similar to Array.map, but for Result-returning functions.
+   * Stops at the first error encountered.
+   *
+   * @param values - Array of values to map
+   * @param fn - Function that transforms value to Result
+   * @returns Result containing array of transformed values or first error
+   *
+   * @example
+   * ```ts
+   * const parseNumbers = (s: string) =>
+   *   isNaN(+s) ? Result.err('invalid') : Result.ok(+s);
+   *
+   * const result = Result.traverse(['1', '2', '3'], parseNumbers);
+   * // Result.ok([1, 2, 3])
+   *
+   * const invalid = Result.traverse(['1', 'x', '3'], parseNumbers);
+   * // Result.err('invalid')
+   * ```
+   */
+  static traverse<A, T, E>(
+    values: readonly A[],
+    fn: (a: A) => Result<T, E>,
+  ): Result<T[], E> {
+    const out: T[] = [];
+    for (const v of values) {
+      const r = fn(v);
+      if (r.isErr()) {
+        return Result.err<T[], E>(r.unwrapErr());
+      }
+      out.push(r.unwrap());
+    }
+    return Result.ok<T[], E>(out);
   }
 }
