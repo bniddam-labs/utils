@@ -1,18 +1,18 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-	entry: {
-		index: 'src/index.ts',
-		'string/index': 'src/string/index.ts',
-		'result/index': 'src/result/index.ts',
-		'validation/index': 'src/validation/index.ts',
-	},
-	format: ['cjs', 'esm'],
-	dts: {
-		resolve: true, // Resolve and inline all type definitions
-	},
-	splitting: false,
-	sourcemap: true,
-	clean: true,
-	treeshake: true,
+  entry: {
+    index: 'src/index.ts',
+    'string/index': 'src/string/index.ts',
+    'result/index': 'src/result/index.ts',
+    'validation/index': 'src/validation/index.ts',
+  },
+  format: ['cjs', 'esm'],
+  dts: {
+    resolve: true, // Resolve and inline all type definitions
+  },
+  splitting: false,
+  sourcemap: true,
+  clean: true,
+  treeshake: true,
 });

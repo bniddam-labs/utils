@@ -2,9 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "module": "ESNext",
-    "lib": [
-      "es6"
-    ],
+    "lib": ["es6"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -22,13 +20,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }

@@ -57,12 +57,6 @@ yarn add github:bniddam-labs/utils
 pnpm add github:bniddam-labs/utils
 ```
 
-Or if/when published to npm:
-
-```bash
-npm i @bniddam-labs/utils
-```
-
 🧩 Usage
 This package exposes several entry points — the top-level package re-exports selected modules and there are explicit submodules for focused imports:
 

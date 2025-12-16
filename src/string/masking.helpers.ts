@@ -39,9 +39,7 @@ export function maskPhone(phone: string, visibleDigits: number = 4): string {
     return '*'.repeat(phone.length);
   }
 
-  const masked = phone
-    .slice(0, -visibleDigits)
-    .replace(/[0-9]/g, '*');
+  const masked = phone.slice(0, -visibleDigits).replace(/[0-9]/g, '*');
   const visible = phone.slice(-visibleDigits);
 
   return masked + visible;
@@ -78,9 +76,7 @@ export function maskCardNumber(
 
   // Group in chunks of 4
   const maskedGroups = Math.ceil(maskedCount / 4);
-  const masked = Array(maskedGroups)
-    .fill('****')
-    .join(separator);
+  const masked = Array(maskedGroups).fill('****').join(separator);
 
   return `${masked}${separator}${visible}`;
 }

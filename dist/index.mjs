@@ -34,7 +34,9 @@ function sanitizeFilename(filename, maxLength = 255) {
     sanitized = nameWithoutExt.slice(0, maxNameLength) + ext;
   }
   if (!sanitized || sanitized === ext || sanitized.length === 0) {
-    throw new Error(`Cannot sanitize filename: "${filename}" results in an empty or invalid filename after sanitization`);
+    throw new Error(
+      `Cannot sanitize filename: "${filename}" results in an empty or invalid filename after sanitization`
+    );
   }
   return sanitized;
 }
@@ -91,15 +93,15 @@ function maskString(str, visibleStart = 2, visibleEnd = 2, maskChar = "*") {
   const maskedLength = str.length - visibleStart - visibleEnd;
   return `${start}${maskChar.repeat(maskedLength)}${end}`;
 }
-var emailSchema = z.string().email("Invalid email address");
-var phoneSchema = z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format (E.164 format expected)");
-var urlSchema = z.string().url("Invalid URL format");
-var filenameSchema = z.string().min(1, "Filename cannot be empty").max(255, "Filename too long").regex(/^[a-zA-Z0-9._-]+$/, "Filename contains invalid characters");
-var slugStringSchema = z.string().min(1).max(100).regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Invalid slug format");
-var nonEmptyStringSchema = z.string().trim().min(1, "String cannot be empty");
-var alphanumericSchema = z.string().regex(/^[a-zA-Z0-9]+$/, "Must contain only letters and numbers");
-var hexColorSchema = z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid hex color format");
-var createStringSchema = (min, max, message) => z.string().min(min, message).max(max, message);
+var emailSchema = z.email({ error: "Invalid email address" });
+var phoneSchema = z.string().regex(/^\+?[1-9]\d{1,14}$/, { error: "Invalid phone number format (E.164 format expected)" });
+var urlSchema = z.string().url({ error: "Invalid URL format" });
+var filenameSchema = z.string().min(1, { error: "Filename cannot be empty" }).max(255, { error: "Filename too long" }).regex(/^[a-zA-Z0-9._-]+$/, { error: "Filename contains invalid characters" });
+var slugStringSchema = z.string().min(1).max(100).regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, { error: "Invalid slug format" });
+var nonEmptyStringSchema = z.string().trim().min(1, { error: "String cannot be empty" });
+var alphanumericSchema = z.string().regex(/^[a-zA-Z0-9]+$/, { error: "Must contain only letters and numbers" });
+var hexColorSchema = z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, { error: "Invalid hex color format" });
+var createStringSchema = (min, max, message) => z.string().min(min, message ? { error: message } : void 0).max(max, message ? { error: message } : void 0);
 var createEnumSchema = (values) => z.enum(values);
 
 // src/result/result.ts

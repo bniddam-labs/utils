@@ -143,7 +143,7 @@ declare function maskString(str: string, visibleStart?: number, visibleEnd?: num
 /**
  * Zod schema for email validation
  */
-declare const emailSchema: z.ZodString;
+declare const emailSchema: z.ZodEmail;
 /**
  * Zod schema for phone number validation (international format)
  */
@@ -179,6 +179,6 @@ declare const createStringSchema: (min: number, max: number, message?: string) =
 /**
  * Create a Zod schema for enum from string array
  */
-declare const createEnumSchema: <T extends readonly [string, ...string[]]>(values: T) => z.ZodEnum<z.Writeable<T>>;
+declare const createEnumSchema: <T extends readonly [string, ...string[]]>(values: T) => z.ZodEnum<{ [k_1 in T[number]]: k_1; } extends infer T_1 ? { [k in keyof T_1]: T_1[k]; } : never>;
 
 export { alphanumericSchema, createEnumSchema, createStringSchema, emailSchema, filenameSchema, hexColorSchema, maskCardNumber, maskEmail, maskPhone, maskString, nonEmptyStringSchema, normalizeWhitespace, phoneSchema, removeWhitespace, sanitizeFilename, sanitizeSearchInput, slugStringSchema, truncate, urlSchema };
