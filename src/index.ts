@@ -6,11 +6,13 @@
  *
  * ## Modules
  *
+ * - **config**: Configuration management and environment variable handling
  * - **string**: String manipulation, sanitization, masking, and Zod schemas
  * - **result**: Type-safe error handling with Result type
  * - **validation**: Zod-based validation utilities
  */
 
-export * from './string/index.js';
-export * from './result/index.js';
-export * from './validation/index.js';
+export * from './config/index';
+export * from './result/index';
+export * from './string/index';
+export * from './validation/index';
