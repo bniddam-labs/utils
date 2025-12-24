@@ -1,64 +1,91 @@
 {
-  "name": "@bniddam-labs/utils",
-  "version": "3.2.0",
-  "description": "Framework-agnostic utility functions with Zod validation",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts", 
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "clean": "rm -rf dist",
-    "lint": "biome lint .",
-    "lint:fix": "biome lint --write .",
-    "format": "biome format --write .",
-    "check": "biome check . && pnpm run typecheck",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
-    "prepublishOnly": "pnpm run build"
-  },
-  "keywords": [
-    "utils",
-    "helpers",
-    "typescript",
-    "zod",
-    "validation",
-    "pagination",
-    "sanitization"
-  ],
-  "author": "bniddam",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bniddam-labs/utils.git"
-  },
-  "bugs": {
-    "url": "https://github.com/bniddam-labs/utils/issues"
-  },
-  "homepage": "https://github.com/bniddam-labs/utils#readme",
-  "files": [
-    "src",
-    "dist",
-    "README.md",
-    "LICENSE",
-    "*.json",
-    "*.ts"
-  ],
-  "devDependencies": {
-    "@biomejs/biome": "2.3.9",
-    "@types/node": "^25.0.2",
-    "typescript": "^5.7.3",
-    "vitest": "^4.0.16"
-  },
-  "dependencies": {
-    "dotenv": "^17.2.3",
-    "tsup": "^8.3.5",
-    "zod": "^4.2.1"
-  },
-  "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
-  }
+	"name": "@bniddam-labs/utils",
+	"version": "3.2.1",
+	"description": "Framework-agnostic utility functions with Zod validation",
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		},
+		"./config": {
+			"types": "./dist/config/index.d.ts",
+			"import": "./dist/config/index.mjs",
+			"require": "./dist/config/index.js"
+		},
+		"./string": {
+			"types": "./dist/string/index.d.ts",
+			"import": "./dist/string/index.mjs",
+			"require": "./dist/string/index.js"
+		},
+		"./result": {
+			"types": "./dist/result/index.d.ts",
+			"import": "./dist/result/index.mjs",
+			"require": "./dist/result/index.js"
+		},
+		"./validation": {
+			"types": "./dist/validation/index.d.ts",
+			"import": "./dist/validation/index.mjs",
+			"require": "./dist/validation/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"clean": "rm -rf dist",
+		"lint": "biome lint .",
+		"lint:fix": "biome lint --write .",
+		"format": "biome format --write .",
+		"check": "biome check . && pnpm run typecheck",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest",
+		"test:watch": "vitest --watch",
+		"test:coverage": "vitest --coverage",
+		"prepublishOnly": "pnpm run build"
+	},
+	"keywords": [
+		"utils",
+		"helpers",
+		"typescript",
+		"zod",
+		"validation",
+		"pagination",
+		"sanitization"
+	],
+	"author": "bniddam",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/bniddam-labs/utils.git"
+	},
+	"bugs": {
+		"url": "https://github.com/bniddam-labs/utils/issues"
+	},
+	"homepage": "https://github.com/bniddam-labs/utils#readme",
+	"files": [
+		"src",
+		"dist",
+		"README.md",
+		"LICENSE",
+		"*.json",
+		"*.ts"
+	],
+	"devDependencies": {
+		"@biomejs/biome": "2.3.9",
+		"@types/node": "^25.0.2",
+		"typescript": "^5.7.3",
+		"vitest": "^4.0.16"
+	},
+	"dependencies": {
+		"dotenv": "^17.2.3",
+		"tsup": "^8.3.5",
+		"zod": "^4.2.1"
+	},
+	"engines": {
+		"node": ">=20.0.0",
+		"pnpm": ">=9.0.0"
+	}
 }
