@@ -1,42 +1,10 @@
 {
   "name": "@bniddam-labs/utils",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Framework-agnostic utility functions with Zod validation",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    },
-    "./pagination": {
-      "types": "./dist/pagination/index.d.ts",
-      "import": "./dist/pagination/index.mjs",
-      "require": "./dist/pagination/index.js"
-    },
-    "./id": {
-      "types": "./dist/id/index.d.ts",
-      "import": "./dist/id/index.mjs",
-      "require": "./dist/id/index.js"
-    },
-    "./string": {
-      "types": "./dist/string/index.d.ts",
-      "import": "./dist/string/index.mjs",
-      "require": "./dist/string/index.js"
-    },
-    "./result": {
-      "types": "./dist/result/index.d.ts",
-      "import": "./dist/result/index.mjs",
-      "require": "./dist/result/index.js"
-    },
-    "./validation": {
-      "types": "./dist/validation/index.d.ts",
-      "import": "./dist/validation/index.mjs",
-      "require": "./dist/validation/index.js"
-    }
-  },
+  "types": "./dist/index.d.ts", 
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
