@@ -11,15 +11,19 @@ Table of contents
 - 📦 Install
 - 🧩 Usage
 - 📚 Real examples (from the code)
+  - Configuration Management
+  - Result Pattern
+  - String Utilities
 - 📌 Roadmap
 - 📝 License
 - 📬 Contact
 
 ✨ Features
 
-- Small, well-documented helpers for string sanitization, validation, and result handling.
+- Small, well-documented helpers for string sanitization, validation, result handling, and configuration management.
 - Designed for tree-shaking: import only the modules / functions you need.
 - TypeScript-first with JSDoc and runtime-friendly exports.
+- Modular configuration system with Zod validation and environment variable loading.
 
 🚀 Getting started
 Clone and install locally:
@@ -74,6 +78,7 @@ import * as resultUtils from '@bniddam-labs/utils/result';
 import * as validation from '@bniddam-labs/utils/validation';
 import * as pagination from '@bniddam-labs/utils/pagination';
 import * as id from '@bniddam-labs/utils/id';
+import * as config from '@bniddam-labs/utils/config';
 ```
 
 📚 Examples (from the code)
@@ -185,6 +190,97 @@ Result.ok(user)
   .tapErr(err => logger.error('Failed', err));
 ```
 
+## Configuration Management
+
+Type-safe, modular configuration system with Zod validation and environment variable loading.
+
+### Quick Start
+
+```ts
+import { createConfigBuilder } from '@bniddam-labs/utils/config';
+
+// Selective loading - only load what you need
+const config = createConfigBuilder()
+  .fromDotEnv()
+  .app()
+  .database()
+  .s3()
+  .build();
+```
+
+### Custom Configuration Sections
+
+```ts
+import { z } from 'zod';
+import {
+  createConfigBuilder,
+  createNestedEnvLoader,
+  type AppConfig,
+  type DatabaseConfig
+} from '@bniddam-labs/utils/config';
+
+// Define your custom schema
+const CustomServiceSchema = z.object({
+  url: z.string().url(),
+  apiKey: z.string(),
+  credentials: z.object({
+    username: z.string(),
+    password: z.string()
+  })
+});
+
+// Create loader for environment variables
+const loader = createNestedEnvLoader({
+  url: 'http://localhost:3000',
+  apiKey: '',
+  credentials: { username: 'admin', password: 'secret' }
+});
+
+// Define complete config type
+type MyConfig = {
+  app: AppConfig;
+  database: DatabaseConfig;
+  customService: z.infer<typeof CustomServiceSchema>;
+};
+
+// Build with type safety
+const config = createConfigBuilder()
+  .fromDotEnv()
+  .app()
+  .database()
+  .addCustom('customService', CustomServiceSchema, loader)
+  .build<MyConfig>();
+
+// TypeScript knows about your custom section
+console.log(config.customService.url); // ✅ Full autocomplete
+```
+
+### Fully Custom Configuration
+
+```ts
+// Use completely custom config without any predefined sections
+const MyConfigSchema = z.object({
+  api: z.object({ url: z.string(), key: z.string() }),
+  database: z.object({ host: z.string(), port: z.number() }),
+  features: z.object({ beta: z.boolean() })
+});
+
+type MyConfig = {
+  app: z.infer<typeof MyConfigSchema>;
+};
+
+const config = createConfigBuilder()
+  .fromDotEnv()
+  .addCustom('app', MyConfigSchema, createNestedEnvLoader({
+    api: { url: 'http://localhost', key: '' },
+    database: { host: 'localhost', port: 5432 },
+    features: { beta: false }
+  }))
+  .build<MyConfig>();
+```
+
+**For complete documentation**, see [src/config/README.md](src/config/README.md).
+
 ## String Utilities
 
 Below are real, working examples based on functions exported by the string module (these examples are from the repository source):
@@ -238,7 +334,7 @@ console.log(Object.keys(stringUtils)); // lists the actual exported helper names
 Notes about modules
 
 - The top-level package re-exports a subset of modules. For the most explicit imports and smaller bundles, prefer importing from the submodules (for example '@bniddam-labs/utils/string').
-- Authoritative entrypoints (from package.json): @bniddam-labs/utils, @bniddam-labs/utils/string, @bniddam-labs/utils/result, @bniddam-labs/utils/validation, @bniddam-labs/utils/pagination, @bniddam-labs/utils/id.
+- Authoritative entrypoints (from package.json): @bniddam-labs/utils, @bniddam-labs/utils/string, @bniddam-labs/utils/result, @bniddam-labs/utils/validation, @bniddam-labs/utils/pagination, @bniddam-labs/utils/id, @bniddam-labs/utils/config.
 
 📌 Roadmap
 Planned improvements:
